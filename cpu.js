@@ -175,6 +175,74 @@ cpu = {
             }
         }
         stateRender(canvasStore);
+    },
+
+    //Ex9E skip next instruction if Vx = a pressed key
+    SKPVx(x, key) {
+        if (keyboard.pressedKeys[key]) {
+            this.PC++;
+            this.PC++;
+        }
+    },
+
+    //ExA1 skip next instruction if Vx != a pressed key
+    SKPNVx(x, key) {
+        if (!keyboard.pressedKeys[key]) {
+            this.PC++;
+            this.PC++;
+        }
+    },
+
+    //Fx07 set Vx = current deley timer value
+    LDVxDT(x) {
+        this.genReg[x] = this.delReg;
+    },
+
+    //Fx0A COME BACK once cpu timer is done
+
+    //Fx15 set delay timer = Vx
+    LDDTVx(x) {
+        this.delReg = this.genReg[x];
+    },
+
+    //Fx18 set sound timer = Vx
+    LDDTVx(x) {
+        this.soundReg = this.genReg[x];
+    },
+
+    //Fx1E add Vx to I
+    ADDIVx(x) {
+        this.IReg += this.genReg[x];
+    },
+
+    //Fx29  COME BACK once sprites are in memory
+
+    //Fx33  store BCD representation of current Vx in I, I+1, and I+2 (huns, tens, ones)
+    LDBVx(x) {
+        const BCD = (this.genReg[x]).toString(10);
+        memory[this.IReg] = BCD[0];
+        memory[this.IReg + 1] = BCD[1];
+        memory[this.IReg + 2] = BCD[2];
+    },
+
+    //Fx55 store registers V0 to Vx in memory starting at location I
+    LDIVx(x){
+        memory[this.IReg] = this.genReg[0];
+        if (x < 0) {
+            for (let i=0; i<x; i++) {
+                memory[this.IReg + i] = this.genReg[i];
+            }
+        }
+    },
+
+    //Fx65 read registers V0 to Vx from memory starting at location I
+    LDVxI(x){
+        this.genReg[0] = memory[this.IReg];
+        if (x < 0) {
+            for (let i=0; i<x; i++) {
+                this.genReg[i] = memory[this.IReg + i];
+            }
+        }
     }
 }
 

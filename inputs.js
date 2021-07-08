@@ -18,12 +18,13 @@ keyboard = {
         86: 0xF  // V
     },
 
-    pressedKeys: [], //stores the keys that are currently pressed
+    pressedKeys: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], //stores the keys that are currently pressed
 
     awaitKey: false  //a flag for whether the emulator should await a key press before continuing
 }
 
 //checks if a key is pressed and returns bool
 function checkKey(keyboard, key) {
-    return keyboard.pressedKeys[key];
+    return (keyboard.pressedKeys[key] == 1);
 }
+
