@@ -29,7 +29,8 @@ function pixelToggle(x, y, canvasStore) {
     //wraps location around screen if overflow
     const X = (x < 0) ? (x % 64) + 64 : x % 64;
     const Y = (y < 0) ? (y % 32) + 32 : y % 32;
-    canvasStore.state[X, Y] = canvasStore.state[X, Y] ? 0 : 1;
+    canvasStore.state[X][Y] = canvasStore.state[X][Y] ? 0 : 1;
+    return !canvasStore.state[X][Y]; //returns 1 if a pixel was turned off, for collision checks
 }
 
 //clears the canvas
@@ -40,6 +41,7 @@ function canvasClear(canvasStore) {
 
 //renders the current state to the screen
 function stateRender(canvasStore) {
+    canvasClear(canvasStore);
     const ctx = canvasStore.ctx;
     ctx.fillStyle = '#FFFFFF';
     ctx.strokeStyle = '#000000';
