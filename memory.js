@@ -1,6 +1,11 @@
-let memory = [];
+let memory = [
+    0xa0, 0xf0,
+    0xd0, 0x05
+];
 
-for (let i=0; i < 0xfff; i++) {
+
+
+for (let i = memory.length; i < 0xfff - memory.length; i++) {
     memory.push(0);
 }
 
@@ -78,12 +83,12 @@ memory[internalSprt8Loc + 3] = 0x90;
 memory[internalSprt8Loc + 4] = 0xf0;
 
 //store sprite for 9 at 0x0F0
-const internalSprt1Loc = 0x0f0;
-memory[internalSprt1Loc] = 0xf0;
-memory[internalSprt1Loc + 1] = 0x90;
-memory[internalSprt1Loc + 2] = 0xf0;
-memory[internalSprt1Loc + 3] = 0x10;
-memory[internalSprt1Loc + 4] = 0xf0;
+const internalSprt9Loc = 0x0f0;
+memory[internalSprt9Loc] = 0xf0;
+memory[internalSprt9Loc + 1] = 0x90;
+memory[internalSprt9Loc + 2] = 0xf0;
+memory[internalSprt9Loc + 3] = 0x10;
+memory[internalSprt9Loc + 4] = 0xf0;
 
 //store sprite for A at 0x0F0
 const internalSprtALoc = 0x0f0;

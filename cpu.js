@@ -22,6 +22,9 @@ cpu = {
     //stack
     stack: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
 
+    //storage for cpu interval
+    intervalStore: null,
+
     //operations
 
     //00e0 clears the display
@@ -62,7 +65,7 @@ cpu = {
     },
 
     //5xy0 skip next instr if Vx == Vy
-    SNEVxVy(x,y) {
+    SEVxVy(x,y) {
         if (this.genReg[x] == this.genReg[y]) {
             this.PC = this.PC + 2;
         }
@@ -99,7 +102,7 @@ cpu = {
     },
 
     //8xy4 sets Vx = Vx + Vy
-    ANDVx(x, y) {
+    ANDVxVy(x, y) {
         this.genReg[x] = this.genReg[x] + this.genReg[y];
         if (this.genReg[x] > 255) {     //if result is over 8 bits, set carry flag VF, reduce result to lower 8 bits.
             this.gen[0xF] = 1;
@@ -178,16 +181,16 @@ cpu = {
     },
 
     //Ex9E skip next instruction if Vx = a pressed key
-    SKPVx(x, key) {
-        if (keyboard.pressedKeys[key]) {
+    SKPVx(x) {
+        if (keyboard.pressedKeys[x]) {
             this.PC++;
             this.PC++;
         }
     },
 
     //ExA1 skip next instruction if Vx != a pressed key
-    SKPNVx(x, key) {
-        if (!keyboard.pressedKeys[key]) {
+    SKPNVx(x) {
+        if (!keyboard.pressedKeys[x]) {
             this.PC++;
             this.PC++;
         }
@@ -243,6 +246,142 @@ cpu = {
                 this.genReg[i] = memory[this.IReg + i];
             }
         }
+    },
+
+    opStart0ToFunction(opString) {
+        if (opString == '00e0'){
+            this.CLS();
+        }
+        else if (opString == '00ee'){
+            this.RET();
+        }
+        else {
+            console.log(opString + ' not recognised opcode');
+        }
+    },
+
+    opStart8ToFunction(opString) {
+        const x = parseInt(opString[1], 16);
+        const y = parseInt(opString[2], 16);
+        switch(opString[3]) {
+            case '0':
+                this.LDVxVy(x, y);
+                break;
+            case '1':
+                this.ORVx(x, y);
+                break;
+            case '2':
+                this.ANDVx(x, y);
+                break;
+            case '3':
+                this.XORVx(x, y);
+                break;
+            case '4':
+                this.ANDVxVy(x, y);
+                break;
+            case '5':
+                this.SUBVx(x, y);
+                break;
+            case '6':
+                this.SHR(x);
+                break;
+            case '7':
+                this.SUBN(x, y);
+                break;
+            case 'E':
+                this.SHL(x);
+                break;
+            default:
+                console.log(opString + ' not recognised opcode');
+        }
+    },
+
+    opStartEToFunction(opString) {
+        const reg = parseInt(opString[1], 16);
+        if (opString[2] == '9') {
+            this.SKPVx(reg);
+        }
+        else if (opString[2] == 'a') {
+            this.SKPNVx(reg);
+        }
+        else {
+            console.log(opString + ' not recognised opcode');
+        }
+    },
+
+    opStartFToFunction(opString) {
+
+    },
+
+    opcodeToFunction(opCode) {
+        const opString = opCode.toString(16);
+        const addr = parseInt(opString.slice(1,4), 16);
+        const reg = parseInt(opString[1], 16);
+        const reg2 = parseInt(opString[2], 16);
+        const byte = parseInt(opString.slice(2,4), 16);
+        switch (opString[0]) {
+            case '0':
+                opStart0ToFunction(opString);
+                break;
+            case '1':
+                this.JP(addr);
+                break;
+            case '2':
+                this.CALL(addr);
+                break;
+            case '3':
+                this.SEVx(reg, byte);
+                break;
+            case '4':
+                this.SNEVx(reg, byte);
+                break;
+            case '5':
+                this.SEVxVy(reg, reg2);
+                break;
+            case '6':
+                this.LDVx(x, byte);
+                break;
+            case '7':
+                this.ADDVx(x, byte);
+                break;
+            case '8':
+                opStart8ToFunction(opString);
+                break;
+            case '9':
+                this.SNE(reg, reg2);
+                break;
+            case 'a':
+                this.LDI(addr);
+                break;
+            case 'b':
+                this.JPV0(addr);
+                break;
+            case 'c':
+                this.RNDVx(reg, byte);
+            case 'd':
+                const num = parseInt(opString[3], 16);
+                this.DRW(reg, reg2, num);
+                break;
+            case 'e':
+                opStartEToFunction(opString);
+                break;
+            case 'f':
+                opStartFToFunction(opString);
+                break;
+            default:
+                console.log(opString + ' not recognised opcode');
+        }
+    },
+
+    doCycle() {
+        const mem1 = memory[this.PC];
+        this.PC++;
+        const mem2 = memory[this.PC];
+        this.PC++;
+        const opCode = (mem1 << 8) | mem2;
+        console.log((this.PC).toString(16));
+        console.log(opCode.toString(16));
+        this.opcodeToFunction(opCode);
     }
 }
 
